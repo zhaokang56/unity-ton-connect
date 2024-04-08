@@ -1,12 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using TonSdk.Connect;
 using TonSdk.Core;
-using Unity.VisualScripting;
+using TonSdk.Core.Block;
+using TonSdk.Core.Boc;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UIElements;
+using Wallet = TonSdk.Connect.Wallet;
 
 public class UIManager : MonoBehaviour
 {
@@ -22,7 +26,8 @@ public class UIManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private TonConnectHandler tonConnectHandler;
-    
+    [SerializeField] private TonClientHandler tonClientHandler;
+    private Address address;
     private void Awake()
     {
         TonConnectHandler.OnProviderStatusChanged += OnProviderStatusChange;
@@ -32,20 +37,30 @@ public class UIManager : MonoBehaviour
         EnableConnectWalletButton();
     }
 
-    private void OnProviderStatusChange(Wallet wallet)
+    private  void OnProviderStatusChange(Wallet wallet)
     {
         if(tonConnectHandler.tonConnect.IsConnected)
         {
             Debug.Log("Wallet connected. Address: " + wallet.Account.Address + ". Platform: " + wallet.Device.Platform + "," + wallet.Device.AppName + "," + wallet.Device.AppVersion);
             CloseConnectModal();
             DisableConnectWalletButton();
-            EnableWalletInfoButton(ProcessWalletAddress(wallet.Account.Address.ToString(AddressType.Base64)));
+             address = wallet.Account.Address;
+             GetTonAmount();
+             var testAddress=address.ToString(AddressType.Base64, new AddressStringifyOptions(false, true, true));
+             var mainAddress=address.ToString(AddressType.Base64, new AddressStringifyOptions(true, false, true));
+            EnableWalletInfoButton(ProcessWalletAddress(testAddress));
         }
         else
         {
             EnableConnectWalletButton();
             DisableWalletInfoButton();
         }
+    }
+
+    private async Task GetTonAmount()
+    {
+        var result= await tonClientHandler.GetAmount(address);
+        SetTonAmount(result);
     }
 
     private void OnProviderStatusChangeError(string message)
@@ -124,6 +139,7 @@ public class UIManager : MonoBehaviour
 
     private  void WalletInfoButtonClick(ClickEvent clickEvent)
     {
+        Debug.Log("Open sendPanel");
         ShowSendTXModal();
     }
 
@@ -147,10 +163,10 @@ public class UIManager : MonoBehaviour
             //new Message(receiver, amount),
             //new Message(receiver, amount),
         };
-
+        
         long validUntil = DateTimeOffset.Now.ToUnixTimeSeconds() + 600;
-
-        SendTransactionRequest transactionRequest = new SendTransactionRequest(sendTons, validUntil);
+        
+        SendTransactionRequest transactionRequest = new SendTransactionRequest(sendTons, validUntil,CHAIN.TESTNET);
         await tonConnectHandler.tonConnect.SendTransaction(transactionRequest);
     }
 
@@ -291,15 +307,62 @@ public class UIManager : MonoBehaviour
     private void EnableWalletInfoButton(string wallet)
     {
         // enable wallet info and disconnect button
-        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").UnregisterCallback<ClickEvent>(WalletInfoButtonClick);
-        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").RegisterCallback<ClickEvent>(WalletInfoButtonClick);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("SendBtn").UnregisterCallback<ClickEvent>(WalletInfoButtonClick);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("SendBtn").RegisterCallback<ClickEvent>(WalletInfoButtonClick);
         document.rootVisualElement.Q<VisualElement>("WalletInfoButton").style.display = DisplayStyle.Flex;
-
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("NftListBtn").UnregisterCallback<ClickEvent>(GetNftData);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("NftListBtn").RegisterCallback<ClickEvent>(GetNftData);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("MintBtn").UnregisterCallback<ClickEvent>(TestMint);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("MintBtn").RegisterCallback<ClickEvent>(TestMint);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").style.display = DisplayStyle.Flex;
         document.rootVisualElement.Q<VisualElement>("DisconnectWalletButton").UnregisterCallback<ClickEvent>(DisconnectWalletButtonClick);
         document.rootVisualElement.Q<VisualElement>("DisconnectWalletButton").RegisterCallback<ClickEvent>(DisconnectWalletButtonClick);
         document.rootVisualElement.Q<VisualElement>("DisconnectWalletButton").style.display = DisplayStyle.Flex;
 
-        document.rootVisualElement.Q<Label>("WalletInfoButton_Title").text = wallet;
+        document.rootVisualElement.Q<Label>("WalletInfoButton_Title").text = wallet;       
+
+    }
+
+    private async void TestMint(ClickEvent evt)
+    {
+        var metadataIpfsHash = "QmeLyw5sU5FyTEx9zk9DSj1dA8bLADyjSvn4EocDaE5fHV";
+        NftCollection collectionData = new NftCollection(address,0.08f,address,0,$"ipfs://{metadataIpfsHash}/collection.json",$"ipfs://{metadataIpfsHash}/");
+        Debug.Log($"collecttion data {JsonConvert.SerializeObject(collectionData)}"); 
+        long validUntil = DateTimeOffset.Now.ToUnixTimeSeconds() + 600;
+        StateInitOptions stateInitOptions = new StateInitOptions();
+        stateInitOptions.Code = collectionData.CreateCodeCell();
+        stateInitOptions.Data = collectionData.CreateDataCell();
+       
+        StateInit stateInit = new StateInit(stateInitOptions);
+        Address receive = new Address(0, stateInit);
+        Debug.Log($"my address {address}");
+        Debug.Log($"receive address {receive}");
+        Message message = new Message(receive,new Coins(0.05),stateInit.Cell);
+        Message[] sendTons = 
+        {
+            message,
+            //new Message(receiver, amount),
+            //new Message(receiver, amount),
+        };
+       var result= await tonConnectHandler.tonConnect.SendTransaction(new SendTransactionRequest(sendTons, validUntil, CHAIN.TESTNET));
+       if (result!=null)
+       {
+           Debug.Log(result.Value.ToString());
+       }
+    }
+    private Address ContractAddress(int workchain, StateInit init) {
+        return new Address(workchain, init);
+    }
+    
+    private void GetNftData(ClickEvent evt)
+    {
+        tonClientHandler.GetNftList();
+    }
+
+    private void SetTonAmount(string amount)
+    {
+        document.rootVisualElement.Q<Label>("AmountText").text = amount;
+
     }
 
     private void DisableConnectWalletButton()
@@ -330,6 +393,7 @@ public class UIManager : MonoBehaviour
     }
     #endregion
 }
+
 
    
 
