@@ -25,10 +25,10 @@ public class TonClientHandler : MonoBehaviour
        }
     }
 
-    public async Task GetNftList()
+    public async Task<Address> GetNftList()
     {
-        var nftResult= await client.Nft.GetNftItemData(new Address("EQDkasNWHVpjfmraVHGhQwYBQSV4ER1iQHzE58Zb2sdOXtHn"));
-        Debug.Log(JsonUtility.ToJson(nftResult.Content.Parse()));
+        var nftResult= await client.Nft.GetCollectionData(new Address("EQAhhiH_xTAEq1KDwYnNLm0HzhopycljwaPK3UmwgFlYGpB1"));
+        return nftResult.OwnerAddress;
     }
 
     public async Task TestMint()

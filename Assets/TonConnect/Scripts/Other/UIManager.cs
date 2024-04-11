@@ -2,11 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Mint;
 using TonSdk.Connect;
 using TonSdk.Core;
-using TonSdk.Core.Block;
-using TonSdk.Core.Boc;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UIElements;
@@ -28,6 +26,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TonConnectHandler tonConnectHandler;
     [SerializeField] private TonClientHandler tonClientHandler;
     private Address address;
+
+    private Address collectionAddress;
     private void Awake()
     {
         TonConnectHandler.OnProviderStatusChanged += OnProviderStatusChange;
@@ -310,10 +310,10 @@ public class UIManager : MonoBehaviour
         document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("SendBtn").UnregisterCallback<ClickEvent>(WalletInfoButtonClick);
         document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("SendBtn").RegisterCallback<ClickEvent>(WalletInfoButtonClick);
         document.rootVisualElement.Q<VisualElement>("WalletInfoButton").style.display = DisplayStyle.Flex;
-        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("NftListBtn").UnregisterCallback<ClickEvent>(GetNftData);
-        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("NftListBtn").RegisterCallback<ClickEvent>(GetNftData);
-        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("MintBtn").UnregisterCallback<ClickEvent>(TestMint);
-        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("MintBtn").RegisterCallback<ClickEvent>(TestMint);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("NftListBtn").UnregisterCallback<ClickEvent>(TestCreateNftCollection);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("NftListBtn").RegisterCallback<ClickEvent>(TestCreateNftCollection);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("MintBtn").UnregisterCallback<ClickEvent>(TestCreateMint);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("MintBtn").RegisterCallback<ClickEvent>(TestCreateMint);
         document.rootVisualElement.Q<VisualElement>("WalletInfoButton").style.display = DisplayStyle.Flex;
         document.rootVisualElement.Q<VisualElement>("DisconnectWalletButton").UnregisterCallback<ClickEvent>(DisconnectWalletButtonClick);
         document.rootVisualElement.Q<VisualElement>("DisconnectWalletButton").RegisterCallback<ClickEvent>(DisconnectWalletButtonClick);
@@ -323,41 +323,40 @@ public class UIManager : MonoBehaviour
 
     }
 
-    private async void TestMint(ClickEvent evt)
+    private async void TestCreateNftCollection(ClickEvent evt)
     {
-        var metadataIpfsHash = "QmeLyw5sU5FyTEx9zk9DSj1dA8bLADyjSvn4EocDaE5fHV";
-        NftCollection collectionData = new NftCollection(address,0.08f,address,0,$"ipfs://{metadataIpfsHash}/collection.json",$"ipfs://{metadataIpfsHash}/");
-        Debug.Log($"collecttion data {JsonConvert.SerializeObject(collectionData)}"); 
+        //EQCAwldpPs7-13t_nhY58CLq_fKjcSSIh1If4Wu0OetBdOD1
+        var metadataIpfsHash = "QmXFWMzjpqjFrBNFGd9gESS7hL6mrWN1LjVYThifx5GYVo";
+        NftCollection collectionData = new NftCollection(address,0.07f,address,0,$"ipfs://{metadataIpfsHash}/collection.json",$"ipfs://{metadataIpfsHash}/");
+        Message message = new Message(collectionData.Address,new Coins(1),collectionData.StateInit.Cell);
+        collectionAddress=collectionData.Address;
+        Debug.Log(collectionAddress);
+        await SendTransform(message);
+    }
+
+    private async Task SendTransform(Message message)
+    {
         long validUntil = DateTimeOffset.Now.ToUnixTimeSeconds() + 600;
-        StateInitOptions stateInitOptions = new StateInitOptions();
-        stateInitOptions.Code = collectionData.CreateCodeCell();
-        stateInitOptions.Data = collectionData.CreateDataCell();
-       
-        StateInit stateInit = new StateInit(stateInitOptions);
-        Address receive = new Address(0, stateInit);
-        Debug.Log($"my address {address}");
-        Debug.Log($"receive address {receive}");
-        Message message = new Message(receive,new Coins(0.05),stateInit.Cell);
         Message[] sendTons = 
         {
             message,
-            //new Message(receiver, amount),
-            //new Message(receiver, amount),
         };
-       var result= await tonConnectHandler.tonConnect.SendTransaction(new SendTransactionRequest(sendTons, validUntil, CHAIN.TESTNET));
-       if (result!=null)
-       {
-           Debug.Log(result.Value.ToString());
-       }
-    }
-    private Address ContractAddress(int workchain, StateInit init) {
-        return new Address(workchain, init);
+        var result= await tonConnectHandler.tonConnect.SendTransaction(new SendTransactionRequest(sendTons, validUntil, CHAIN.TESTNET));
+        if (result!=null)
+        {
+            Debug.Log(result?.Boc.ToString());
+        }
     }
     
-    private void GetNftData(ClickEvent evt)
+    private async void TestCreateMint(ClickEvent evt)
     {
-        tonClientHandler.GetNftList();
+        ulong index = 1;
+        var mintParamas = new MintParams(0,address,index,$"5.json");
+        NftItem nftItem = new NftItem(collectionAddress,mintParamas);
+        Message message = new Message(nftItem.NftCollectionAddress,new Coins(0.05),nftItem.CreateMintBody());
+       await SendTransform(message);
     }
+   
 
     private void SetTonAmount(string amount)
     {

@@ -219,8 +219,8 @@
     <Compile Include="Library/PackageCache/com.unity.2d.animation@9.1.0/Editor/SkinningModule/Triangulation/TriangulationUtility.cs" />
     <Compile Include="Library/PackageCache/com.unity.2d.animation@9.1.0/Editor/SkinningModule/SkinningCache/SpriteCache.cs" />
     <Compile Include="Library/PackageCache/com.unity.2d.animation@9.1.0/Editor/SpriteLib/SpriteLibCombineCache.cs" />
-    <Compile Include="Library/PackageCache/com.unity.2d.animation@9.1.0/Editor/SkinningModule/SkeletonTool/SkeletonTool.cs" />
     <Compile Include="Library/PackageCache/com.unity.2d.animation@9.1.0/Editor/SkinningModule/IMGUI/RectSelectionTool.cs" />
+    <Compile Include="Library/PackageCache/com.unity.2d.animation@9.1.0/Editor/SkinningModule/SkeletonTool/SkeletonTool.cs" />
     <Compile Include="Library/PackageCache/com.unity.2d.animation@9.1.0/Editor/SkinningModule/SkinningCache/BoneCacheExtensions.cs" />
     <Compile Include="Library/PackageCache/com.unity.2d.animation@9.1.0/Editor/SkinningModule/Selection/IndexedSelection.cs" />
     <Compile Include="Library/PackageCache/com.unity.2d.animation@9.1.0/Editor/SkinningModule/VisibilityTool/SpriteVisibilityTool.cs" />

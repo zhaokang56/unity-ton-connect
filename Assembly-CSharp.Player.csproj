@@ -47,8 +47,10 @@
   <ItemGroup>
     <Compile Include="Assets/Test/Scripts/TestTonSdkUIManager.cs" />
     <Compile Include="Assets/TonConnect/Scripts/TonConnect/TonConnectHandler.cs" />
+    <Compile Include="Assets/TonConnect/Scripts/Mint/MintCommon.cs" />
     <Compile Include="Assets/TonConnect/Scripts/Mint/NftCollection.cs" />
     <Compile Include="Assets/TonConnect/Scripts/TonConnect/TonClientHandler.cs" />
+    <Compile Include="Assets/TonConnect/Scripts/Mint/MintParams.cs" />
     <Compile Include="Assets/TonConnect/Scripts/Other/UIManager.cs" />
     <Compile Include="Assets/TonConnect/Scripts/QR Code/QRGenerator.cs" />
     <Compile Include="Assets/TonConnect/Scripts/QR Code/QRCoder.cs" />
