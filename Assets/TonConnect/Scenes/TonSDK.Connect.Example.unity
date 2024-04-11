@@ -378,7 +378,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b71f0e50db37e344be6ce980831b8d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UseWebWallets: 0
+  UseWebWallets: 1
   RestoreConnectionOnAwake: 1
   ManifestURL: https://nonogram-us.oss-us-east-1.aliyuncs.com/meta-merge/test-tonconnect-manifest.json
   WalletsListSource: 
