@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class TonClientHandler : MonoBehaviour
 {
-    private TonClient client;
+    public TonClient client;
     private void Awake()
     {
           client = new(new() { Endpoint = "https://testnet.toncenter.com/api/v2/jsonRPC", ApiKey = "8e917567701b99d52f56599ab343121c520b8f215c05d8817d82fd9150b02a37" });

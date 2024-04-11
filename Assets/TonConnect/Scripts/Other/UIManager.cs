@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mint;
+using Newtonsoft.Json;
 using TonSdk.Connect;
 using TonSdk.Core;
 using UnityEngine;
@@ -350,11 +351,13 @@ public class UIManager : MonoBehaviour
     
     private async void TestCreateMint(ClickEvent evt)
     {
-        ulong index = 1;
-        var mintParamas = new MintParams(0,address,index,$"5.json");
-        NftItem nftItem = new NftItem(collectionAddress,mintParamas);
-        Message message = new Message(nftItem.NftCollectionAddress,new Coins(0.05),nftItem.CreateMintBody());
-       await SendTransform(message);
+          var result=  await tonClientHandler.client.Nft.GetCollectionData(new Address("EQCfRNK4q9LDFq3WbgWU0OW5k5raQ_D0DCqSI40VsnZMUDc-") );
+          Debug.Log(result.Data.ToString());
+         ulong index = result.NextItemIndex;
+         var mintParamas = new MintParams(0,address,index,$"0.json");
+         NftItem nftItem = new NftItem(collectionAddress,mintParamas);
+         Message message = new Message(nftItem.NftCollectionAddress,new Coins(1), payload: nftItem.CreateMintBody());
+        await SendTransform(message);
     }
    
 

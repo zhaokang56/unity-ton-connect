@@ -15,7 +15,7 @@ namespace Mint
             ItemOwnerAddress = itemOwnerAddress;
             ItemIndex = itemIndex;
             CommonContentUrl = commonContentUrl;
-            Amount = new Coins(0.05);
+            Amount = new Coins(50000000,new CoinsOptions(true));
             QueryId = queryId;
         }
     }
