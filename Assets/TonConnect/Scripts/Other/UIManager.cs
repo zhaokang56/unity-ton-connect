@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mint;
 using Newtonsoft.Json;
+using Telegram.Bot.Extensions.LoginWidget;
 using TonSdk.Connect;
 using TonSdk.Core;
 using UnityEngine;
@@ -46,9 +47,9 @@ public class UIManager : MonoBehaviour
             CloseConnectModal();
             DisableConnectWalletButton();
              address = wallet.Account.Address;
-             GetTonAmount();
+             // GetTonAmount();
              var testAddress=address.ToString(AddressType.Base64, new AddressStringifyOptions(false, true, true));
-             var mainAddress=address.ToString(AddressType.Base64, new AddressStringifyOptions(true, false, true));
+             // var mainAddress=address.ToString(AddressType.Base64, new AddressStringifyOptions(true, false, true));
             EnableWalletInfoButton(ProcessWalletAddress(testAddress));
         }
         else
@@ -313,6 +314,8 @@ public class UIManager : MonoBehaviour
         document.rootVisualElement.Q<VisualElement>("WalletInfoButton").style.display = DisplayStyle.Flex;
         document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("NftListBtn").UnregisterCallback<ClickEvent>(TestCreateNftCollection);
         document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("NftListBtn").RegisterCallback<ClickEvent>(TestCreateNftCollection);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("LoginBtn").UnregisterCallback<ClickEvent>(TetLogin);
+        document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("LoginBtn").RegisterCallback<ClickEvent>(TetLogin);
         document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("MintBtn").UnregisterCallback<ClickEvent>(TestCreateMint);
         document.rootVisualElement.Q<VisualElement>("WalletInfoButton").Q<VisualElement>("MintBtn").RegisterCallback<ClickEvent>(TestCreateMint);
         document.rootVisualElement.Q<VisualElement>("WalletInfoButton").style.display = DisplayStyle.Flex;
@@ -322,6 +325,12 @@ public class UIManager : MonoBehaviour
 
         document.rootVisualElement.Q<Label>("WalletInfoButton_Title").text = wallet;       
 
+    }
+
+    private void TetLogin(ClickEvent evt)
+    {
+        Debug.Log("测试登录");
+        JSManager.Instance.TestLogin();
     }
 
     private async void TestCreateNftCollection(ClickEvent evt)

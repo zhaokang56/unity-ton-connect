@@ -265,6 +265,9 @@
     <Reference Include="TonSdk.Client">
       <HintPath>/Users/kangzhao/unity-ton-connect/Assets/Packages/TonSdk.Client.0.2.8/lib/netstandard2.1/TonSdk.Client.dll</HintPath>
     </Reference>
+    <Reference Include="Telegram.Bot.Extensions.LoginWidget">
+      <HintPath>/Users/kangzhao/unity-ton-connect/Assets/Packages/Telegram.Bot.Extensions.LoginWidget.1.2.0/lib/netstandard2.0/Telegram.Bot.Extensions.LoginWidget.dll</HintPath>
+    </Reference>
     <Reference Include="zxing">
       <HintPath>/Users/kangzhao/unity-ton-connect/Assets/Packages/ZXing.Net.0.16.9/lib/netstandard2.1/zxing.dll</HintPath>
     </Reference>
